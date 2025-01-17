@@ -1,0 +1,235 @@
+import sympy as sp
+
+# Function to calculate the magnitude (length) of a vector
+def magnitude(vector):
+    return sp.sqrt(sum([component**2 for component in vector]))
+
+# Function to calculate directional cosines for a vector
+def directional_cosines(vector):
+    mag = magnitude(vector)
+    if mag != 0:
+        return [component / mag for component in vector]
+    else:
+        return [0, 0, 0]  # If the magnitude is zero, return zero directional cosines
+
+# Function to calculate the angle (in degrees) from the directional cosine
+def angle_from_cosine(cosine_value):
+    if cosine_value >= -1 and cosine_value <= 1:  # Ensure it's a valid cosine value
+        # Convert radians to degrees
+        angle_rad = sp.acos(cosine_value)
+        angle_deg = sp.deg(angle_rad)
+        return angle_deg
+    else:
+        return None  # Return None if the value is out of range for acos
+
+def get_vector_type():
+    print("Please choose the type of vector you are entering:")
+    print("1. Position Vector")
+    print("2. Velocity Vector")
+    print("3. Acceleration Vector")
+
+    # Get the vector type input from the user
+    vector_type = int(input("Enter 1, 2, or 3: "))
+    return vector_type
+
+def get_vector_components(vector_type):
+    t = sp.symbols('t')
+
+    if vector_type == 1:
+        print("Enter the components of the position vector:")
+    elif vector_type == 2:
+        print("Enter the components of the velocity vector:")
+    elif vector_type == 3:
+        print("Enter the components of the acceleration vector:")
+
+    # Prompt user for each component based on the chosen vector type
+    i_component = input("Enter the i-component (can be a function of t): ")
+    j_component = input("Enter the j-component (can be a function of t): ")
+    k_component = input("Enter the k-component (can be a function of t): ")
+
+    # Convert the input strings to sympy expressions
+    i_expr = sp.sympify(i_component)
+    j_expr = sp.sympify(j_component)
+    k_expr = sp.sympify(k_component)
+
+    # Construct the vector as a list of components
+    vector = sp.Matrix([i_expr, j_expr, k_expr])
+
+    return vector
+
+def compute_velocity(position_vector, t):
+    velocity = sp.diff(position_vector, t)
+    return velocity
+
+def compute_acceleration(velocity_vector, t):
+    acceleration = sp.diff(velocity_vector, t)
+    return acceleration
+
+def integrate_vector(vector, t, initial_conditions):
+    # Integrate the vector and apply the initial conditions
+    integrated_vector = sp.integrate(vector, t) + initial_conditions
+    return integrated_vector
+
+def get_initial_conditions_for_position():
+    # Ask for the initial position condition
+    x0 = float(input("Enter the initial x-position: "))
+    y0 = float(input("Enter the initial y-position: "))
+    z0 = float(input("Enter the initial z-position: "))
+    return sp.Matrix([x0, y0, z0])
+
+def get_initial_conditions_for_velocity():
+    # Ask for the initial velocity condition
+    v0x = float(input("Enter the initial x-velocity: "))
+    v0y = float(input("Enter the initial y-velocity: "))
+    v0z = float(input("Enter the initial z-velocity: "))
+    return sp.Matrix([v0x, v0y, v0z])
+
+def get_time_value():
+    t_value = float(input("Enter the time value to evaluate the vectors: "))
+    return t_value
+
+def get_time_interval():
+    start_time = float(input("Enter the start time: "))
+    end_time = float(input("Enter the end time: "))
+    return start_time, end_time
+
+def main():
+    vector_type = get_vector_type()
+
+    # Get the components of the selected vector
+    t = sp.symbols('t')
+    vector = get_vector_components(vector_type)
+
+    # Handle the cases for velocity -> position or acceleration -> velocity -> position
+    if vector_type == 2:  # Velocity Vector
+        print("You entered a velocity vector. We will compute the position and acceleration vectors from velocity.")
+
+        # Ask for initial position and initial velocity, as we already have the velocity vector
+        initial_position = get_initial_conditions_for_position()  # Ask for initial position condition
+        initial_velocity = get_initial_conditions_for_velocity()  # Ask for initial velocity condition
+
+        # Integrate the velocity vector to get the position vector
+        position_vector = integrate_vector(vector, t, initial_position)
+
+        # Compute the acceleration vector (derivative of velocity)
+        acceleration_vector = compute_acceleration(vector, t)
+
+        # Ask user if they need to evaluate at a specific time or calculate displacement
+        choice = input("Do you need to evaluate the vectors at an exact time or calculate displacement? (Enter 'time' for exact time or 'displacement' for displacement): ").strip().lower()
+
+        if choice == "time":
+            time_value = get_time_value()
+
+            # Evaluate the vectors at the given time
+            position_at_time = position_vector.subs(t, time_value)
+            velocity_at_time = vector.subs(t, time_value)
+            acceleration_at_time = acceleration_vector.subs(t, time_value)
+
+            # Display position, velocity, and acceleration vectors at time t
+            print(f"Position Vector at t = {time_value}: {position_at_time}")
+            position_magnitude = magnitude(position_at_time)
+            print(f"Magnitude of Position Vector at t = {time_value}: {position_magnitude}")
+
+            print(f"Velocity Vector at t = {time_value}: {velocity_at_time}")
+            velocity_magnitude = magnitude(velocity_at_time)
+            print(f"Magnitude of Velocity Vector at t = {time_value}: {velocity_magnitude}")
+
+            print(f"Acceleration Vector at t = {time_value}: {acceleration_at_time}")
+            acceleration_magnitude = magnitude(acceleration_at_time)
+            print(f"Magnitude of Acceleration Vector at t = {time_value}: {acceleration_magnitude}")
+
+        elif choice == "displacement":
+            start_time, end_time = get_time_interval()
+
+            # Evaluate the vectors at the start and end times
+            position_at_start = position_vector.subs(t, start_time)
+            position_at_end = position_vector.subs(t, end_time)
+            displacement = position_at_end - position_at_start
+            displacement_magnitude = magnitude(displacement)
+
+            velocity_at_start = vector.subs(t, start_time)
+            velocity_at_end = vector.subs(t, end_time)
+            velocity_displacement = velocity_at_end - velocity_at_start
+            velocity_displacement_magnitude = magnitude(velocity_displacement)
+
+            acceleration_at_start = acceleration_vector.subs(t, start_time)
+            acceleration_at_end = acceleration_vector.subs(t, end_time)
+            acceleration_displacement = acceleration_at_end - acceleration_at_start
+            acceleration_displacement_magnitude = magnitude(acceleration_displacement)
+
+            # Display displacement and magnitudes
+            print(f"Displacement from t = {start_time} to t = {end_time}: {displacement}")
+            print(f"Magnitude of displacement: {displacement_magnitude}")
+            print(f"Change in velocity: {velocity_displacement}")
+            print(f"Magnitude of velocity change: {velocity_displacement_magnitude}")
+            print(f"Change in acceleration: {acceleration_displacement}")
+            print(f"Magnitude of acceleration change: {acceleration_displacement_magnitude}")
+
+    elif vector_type == 3:  # Acceleration Vector
+        print("You entered an acceleration vector. We will compute the velocity and position vectors from acceleration.")
+
+        # Ask for initial velocity and initial position, as we already have the acceleration vector
+        initial_velocity = get_initial_conditions_for_velocity()  # Ask for initial velocity condition
+        initial_position = get_initial_conditions_for_position()  # Ask for initial position condition
+
+        # Integrate the acceleration vector to get the velocity vector
+        velocity_vector_integrated = integrate_vector(vector, t, initial_velocity)
+
+        # Integrate the velocity vector to get the position vector
+        position_vector_integrated = integrate_vector(velocity_vector_integrated, t, initial_position)
+
+        # Ask user if they need to evaluate at a specific time or calculate displacement
+        choice = input("Do you need to evaluate the vectors at an exact time or calculate displacement? (Enter 'time' for exact time or 'displacement' for displacement): ").strip().lower()
+
+        if choice == "time":
+            time_value = get_time_value()
+            velocity_at_time = velocity_vector_integrated.subs(t, time_value)
+            position_at_time = position_vector_integrated.subs(t, time_value)
+            acceleration_at_time = vector.subs(t, time_value)
+
+            print(f"Velocity Vector at t = {time_value}: {velocity_at_time}")
+            velocity_magnitude = magnitude(velocity_at_time)
+            print(f"Magnitude of Velocity Vector at t = {time_value}: {velocity_magnitude}")
+
+            print(f"Position Vector at t = {time_value}: {position_at_time}")
+            position_magnitude = magnitude(position_at_time)
+            print(f"Magnitude of Position Vector at t = {time_value}: {position_magnitude}")
+
+            print(f"Acceleration Vector at t = {time_value}: {acceleration_at_time}")
+            acceleration_magnitude = magnitude(acceleration_at_time)
+            print(f"Magnitude of Acceleration Vector at t = {time_value}: {acceleration_magnitude}")
+
+        elif choice == "displacement":
+            start_time, end_time = get_time_interval()
+            velocity_at_start = velocity_vector_integrated.subs(t, start_time)
+            velocity_at_end = velocity_vector_integrated.subs(t, end_time)
+            position_at_start = position_vector_integrated.subs(t, start_time)
+            position_at_end = position_vector_integrated.subs(t, end_time)
+
+            displacement = position_at_end - position_at_start
+            displacement_magnitude = magnitude(displacement)
+
+            print(f"Displacement from t = {start_time} to t = {end_time}: {displacement}")
+            print(f"Magnitude of displacement: {displacement_magnitude}")
+
+    else:  # For Position Vector case (no changes)
+        velocity = compute_velocity(vector, t)
+        acceleration = compute_acceleration(velocity, t)
+        time_value = get_time_value()
+        position_at_time = vector.subs(t, time_value)
+        velocity_at_time = velocity.subs(t, time_value)
+        acceleration_at_time = acceleration.subs(t, time_value)
+
+        vector_magnitude = magnitude(position_at_time)
+        velocity_magnitude = magnitude(velocity_at_time)
+        acceleration_magnitude = magnitude(acceleration_at_time)
+
+        print(f"Position Vector at t = {time_value}: {position_at_time}")
+        print(f"Magnitude of the selected vector at t = {time_value}: {vector_magnitude}")
+        print(f"Velocity Vector at t = {time_value}: {velocity_at_time}")
+        print(f"Magnitude of the velocity vector at t = {time_value}: {velocity_magnitude}")
+        print(f"Acceleration Vector at t = {time_value}: {acceleration_at_time}")
+        print(f"Magnitude of the acceleration vector at t = {time_value}: {acceleration_magnitude}")
+
+# Call the main function
+main()
