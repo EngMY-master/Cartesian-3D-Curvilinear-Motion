@@ -51,3 +51,31 @@ This program deals with the motion of objects in three-dimensional space and inv
    - Displacement, velocity changes, and acceleration changes over a time interval are calculated as differences of vector evaluations.
 
 ---
+### 7. **Input Example**
+
+Please choose the type of vector you are entering:
+1. Position Vector
+2. Velocity Vector
+3. Acceleration Vector
+Enter 1, 2, or 3: 2
+Enter the components of the velocity vector:
+Enter the i-component (can be a function of t): 16*t**2
+Enter the j-component (can be a function of t): 4*t**3
+Enter the k-component (can be a function of t): 5*t+2
+You entered a velocity vector. We will compute the position and acceleration vectors from velocity.
+Enter the initial x-position: 0
+Enter the initial y-position: 0
+Enter the initial z-position: 0
+Enter the initial x-velocity: 0
+Enter the initial y-velocity: 0
+Enter the initial z-velocity: 0
+Do you need to evaluate the vectors at an exact time or calculate displacement? (Enter 'time' for exact time or 'displacement' for displacement): time
+Enter the time value to evaluate the vectors: 2
+
+Results:
+Position Vector at t = 2.0: Matrix([[42.6666666666667], [16.0000000000000], [14.0000000000000]])
+Magnitude of Position Vector at t = 2.0: 47.6701630419327
+Velocity Vector at t = 2.0: Matrix([[64.0000000000000], [32.0000000000000], [12.0000000000000]])
+Magnitude of Velocity Vector at t = 2.0: 72.5534285888682
+Acceleration Vector at t = 2.0: Matrix([[64.0000000000000], [48.0000000000000], [5]])
+Magnitude of Acceleration Vector at t = 2.0: 80.1560977094070
