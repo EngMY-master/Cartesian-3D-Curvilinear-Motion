@@ -1,0 +1,205 @@
+# Detailed Comments on the Code
+
+## Defining Symbols:
+
+```python
+t = sp.symbols('t')
+```
+This defines `t` as a symbolic variable for time, enabling symbolic differentiation and other operations with respect to time.
+
+---
+
+## Magnitude Function:
+
+```python
+def magnitude(vector):
+    return sp.sqrt(sum([component**2 for component in vector]))
+```
+This function calculates the magnitude (or length) of a vector using the Pythagorean theorem. It squares each component, sums them, and takes the square root.
+
+---
+
+## Directional Cosines:
+
+```python
+def directional_cosines(vector):
+    mag = magnitude(vector)
+    if mag != 0:
+        return [component / mag for component in vector]
+    else:
+        return [0, 0, 0]
+```
+This function calculates the directional cosines of a vector by dividing each component by the vector's magnitude. If the magnitude is zero, it returns zero cosines.
+
+---
+
+## Angle from Cosine:
+
+```python
+def angle_from_cosine(cosine_value):
+    if cosine_value >= -1 and cosine_value <= 1:
+        angle_rad = sp.acos(cosine_value)
+        angle_deg = sp.deg(angle_rad)
+        return angle_deg
+    else:
+        return None
+```
+This function calculates the angle (in degrees) corresponding to a given cosine value. It ensures the cosine value is within the valid range (-1 to 1).
+
+---
+
+## Vector Input Type:
+
+```python
+def get_vector_type():
+    print("Please choose the type of vector you are entering:")
+    print("1. Position Vector")
+    print("2. Velocity Vector")
+    print("3. Acceleration Vector")
+    vector_type = int(input("Enter 1, 2, or 3: "))
+    return vector_type
+```
+This function prompts the user to specify the type of vector (position, velocity, or acceleration) they want to input.
+
+---
+
+## Getting Vector Components:
+
+```python
+def get_vector_components(vector_type):
+    t = sp.symbols('t')
+    if vector_type == 1:
+        print("Enter the components of the position vector:")
+    elif vector_type == 2:
+        print("Enter the components of the velocity vector:")
+    elif vector_type == 3:
+        print("Enter the components of the acceleration vector:")
+    i_component = input("Enter the i-component (can be a function of t): ")
+    j_component = input("Enter the j-component (can be a function of t): ")
+    k_component = input("Enter the k-component (can be a function of t): ")
+    i_expr = sp.sympify(i_component)
+    j_expr = sp.sympify(j_component)
+    k_expr = sp.sympify(k_component)
+    vector = sp.Matrix([i_expr, j_expr, k_expr])
+    return vector
+```
+This function gathers the components of the chosen vector type from the user. It converts the input into SymPy expressions for further calculations.
+
+---
+
+## Velocity and Acceleration Computation:
+
+### Compute Velocity:
+
+```python
+def compute_velocity(position_vector, t):
+    velocity = sp.diff(position_vector, t)
+    return velocity
+```
+This function computes the velocity vector by differentiating the position vector with respect to time.
+
+### Compute Acceleration:
+
+```python
+def compute_acceleration(velocity_vector, t):
+    acceleration = sp.diff(velocity_vector, t)
+    return acceleration
+```
+This function computes the acceleration vector by differentiating the velocity vector with respect to time.
+
+---
+
+## Integrating Vectors:
+
+```python
+def integrate_vector(vector, t, initial_conditions):
+    integrated_vector = sp.integrate(vector, t) + initial_conditions
+    return integrated_vector
+```
+This function integrates a vector with respect to time and adds initial conditions to calculate the resulting vector.
+
+---
+
+## Initial Conditions:
+
+### Position:
+
+```python
+def get_initial_conditions_for_position():
+    x0 = float(input("Enter the initial x-position: "))
+    y0 = float(input("Enter the initial y-position: "))
+    z0 = float(input("Enter the initial z-position: "))
+    return sp.Matrix([x0, y0, z0])
+```
+This function collects initial position conditions for all three axes.
+
+### Velocity:
+
+```python
+def get_initial_conditions_for_velocity():
+    v0x = float(input("Enter the initial x-velocity: "))
+    v0y = float(input("Enter the initial y-velocity: "))
+    v0z = float(input("Enter the initial z-velocity: "))
+    return sp.Matrix([v0x, v0y, v0z])
+```
+This function collects initial velocity conditions for all three axes.
+
+---
+
+## Main Functionality:
+
+### Handling Velocity Vector:
+
+```python
+if vector_type == 2:
+    initial_position = get_initial_conditions_for_position()
+    position_vector = integrate_vector(vector, t, initial_position)
+    acceleration_vector = compute_acceleration(vector, t)
+```
+If the user provides a velocity vector, this block integrates it to find the position vector and computes the acceleration vector.
+
+### Handling Acceleration Vector:
+
+```python
+elif vector_type == 3:
+    initial_velocity = get_initial_conditions_for_velocity()
+    initial_position = get_initial_conditions_for_position()
+    velocity_vector_integrated = integrate_vector(vector, t, initial_velocity)
+    position_vector_integrated = integrate_vector(velocity_vector_integrated, t, initial_position)
+```
+If the user provides an acceleration vector, this block integrates it twice to find the velocity and position vectors.
+
+---
+
+## Evaluating Vectors:
+
+### Specific Time:
+
+```python
+if choice == "time":
+    time_value = get_time_value()
+    position_at_time = position_vector.subs(t, time_value)
+    velocity_at_time = vector.subs(t, time_value)
+    acceleration_at_time = acceleration_vector.subs(t, time_value)
+```
+This block evaluates the position, velocity, and acceleration vectors at a specific time value.
+
+### Displacement:
+
+```python
+elif choice == "displacement":
+    start_time, end_time = get_time_interval()
+    position_at_start = position_vector.subs(t, start_time)
+    position_at_end = position_vector.subs(t, end_time)
+    displacement = position_at_end - position_at_start
+```
+This block calculates displacement by evaluating the position vector at the start and end times and finding the difference.
+
+---
+
+## Call the Main Function:
+
+```python
+main()
+```
+This calls the main function, starting the process and prompting the user for inputs.
